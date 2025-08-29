@@ -22,13 +22,9 @@ classifiers = [
 keywords = ["refractive index", "optics"]
 
 dependencies = [
-    "pint ~=0.24",
+    "pydantic",
     "numpy",
-    "matplotlib ~=3.8",
-    "requests ~=2.31",
-    "pyyaml ~=6.0",
-    "MPSPlots >=1.6",
-    "tabulate ~=0.9",
+    "MPSPlots",
     "TypedUnit"
 ]
 
