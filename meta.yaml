@@ -23,20 +23,15 @@ requirements:
     - setuptools-scm >=8.0
     - pip
   run:
-    - pint ~= 0.24
     - martinpdes::mpsplots
     - martinpdes::typedunit
-    - pyyaml ~=6.0
-    - requests ~=2.31
-    - matplotlib ~=3.8
     - numpy
-    - tabulate ~=0.9
 
 about:
   home: https://github.com/MartinPdeS/OptikTools
   license: MIT
-  summary: "A package for refractive index values."
-  description: OptikTools is a library that helps the end-user to build it's own refractive index library.
+  summary: "A package for Gaussian optics."
+  description: OptikTools is a library that helps the end-user to build it's own Gaussian optics library.
   dev_url: https://github.com/MartinPdeS/OptikTools
   doc_url: https://martinpdes.github.io/OptikTools/
   license_file: LICENSE
@@ -57,9 +52,7 @@ test:
   commands:
     - python -m pytest
   source_files:
-    - tests/test_sellmeier.py
-    - tests/test_tabulated.py
-    - tests/test_usual_materials.py
+    - tests/*
 
 extra:
   recipe-maintainers:
