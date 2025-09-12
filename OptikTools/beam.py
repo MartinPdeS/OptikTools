@@ -6,10 +6,12 @@ and common optical components. All names are explicit; no abbreviations.
 
 Dependencies: pint, numpy, matplotlib
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 from pydantic.dataclasses import dataclass
 from TypedUnit import Length, Power, Dimensionless, ureg
+from MPSPlots import helper
 
 from OptikTools.polarization import PolarizationState
 from OptikTools.utils import config_dict
@@ -17,17 +19,25 @@ from OptikTools.utils import config_dict
 
 # ------------------------------ Core beams -----------------------------------
 
+
 @dataclass(config=config_dict)
 class EllipticalGaussianBeam:
-    vacuum_wavelength: Length                # [length]
-    beam_waist_radius_x: Length               # [length] 1/e^2 radius
-    beam_waist_radius_y: Length               # [length] 1/e^2 radius
-    polarization_state: PolarizationState       # polarization state
+    vacuum_wavelength: Length  # [length]
+    beam_waist_radius_x: Length  # [length] 1/e^2 radius
+    beam_waist_radius_y: Length  # [length] 1/e^2 radius
+    polarization_state: PolarizationState  # polarization state
     optical_power: Power = 1.0 * ureg.milliwatt  # [power]
 
     # ---- Constructors ----
     @classmethod
-    def from_waists(cls, vacuum_wavelength: Length, beam_waist_radius_x: Length, beam_waist_radius_y: Length, polarization_state: PolarizationState, optical_power: Power = 1.0 * ureg.milliwatt) -> "EllipticalGaussianBeam":
+    def from_waists(
+        cls,
+        vacuum_wavelength: Length,
+        beam_waist_radius_x: Length,
+        beam_waist_radius_y: Length,
+        polarization_state: PolarizationState,
+        optical_power: Power = 1.0 * ureg.milliwatt,
+    ) -> "EllipticalGaussianBeam":
         """
         Create an EllipticalGaussianBeam from beam waists.
 
@@ -49,11 +59,18 @@ class EllipticalGaussianBeam:
             beam_waist_radius_x=beam_waist_radius_x,
             beam_waist_radius_y=beam_waist_radius_y,
             polarization_state=polarization_state,
-            optical_power=optical_power
+            optical_power=optical_power,
         )
 
     @classmethod
-    def from_numerical_apertures(cls, vacuum_wavelength: Length, numerical_aperture_x: Dimensionless, numerical_aperture_y: Dimensionless, polarization_state: PolarizationState, optical_power: Power = 1.0 * ureg.milliwatt) -> "EllipticalGaussianBeam":
+    def from_numerical_apertures(
+        cls,
+        vacuum_wavelength: Length,
+        numerical_aperture_x: Dimensionless,
+        numerical_aperture_y: Dimensionless,
+        polarization_state: PolarizationState,
+        optical_power: Power = 1.0 * ureg.milliwatt,
+    ) -> "EllipticalGaussianBeam":
         """
         Create an EllipticalGaussianBeam from numerical apertures.
 
@@ -71,15 +88,19 @@ class EllipticalGaussianBeam:
             The optical power of the beam.
         """
         # w0 = λ / (π NA)
-        beam_waist_radius_x = (vacuum_wavelength / (np.pi * numerical_aperture_x)).to(ureg.meter)
-        beam_waist_radius_y = (vacuum_wavelength / (np.pi * numerical_aperture_y)).to(ureg.meter)
+        beam_waist_radius_x = (vacuum_wavelength / (np.pi * numerical_aperture_x)).to(
+            ureg.meter
+        )
+        beam_waist_radius_y = (vacuum_wavelength / (np.pi * numerical_aperture_y)).to(
+            ureg.meter
+        )
 
         return cls(
             vacuum_wavelength=vacuum_wavelength,
             beam_waist_radius_x=beam_waist_radius_x,
             beam_waist_radius_y=beam_waist_radius_y,
             polarization_state=polarization_state,
-            optical_power=optical_power
+            optical_power=optical_power,
         )
 
     # ---- Derived quantities ----
@@ -88,7 +109,9 @@ class EllipticalGaussianBeam:
         Compute the numerical aperture in the x direction (dimensionless).
         NA_x ≈ λ / (π * w0_x) in the scalar Gaussian/paraxial limit.
         """
-        numerical_aperture_x = (self.vacuum_wavelength / (np.pi * self.beam_waist_radius_x))
+        numerical_aperture_x = self.vacuum_wavelength / (
+            np.pi * self.beam_waist_radius_x
+        )
         return numerical_aperture_x.to(ureg.dimensionless)
 
     def compute_numerical_aperture_y(self) -> Dimensionless:
@@ -96,7 +119,9 @@ class EllipticalGaussianBeam:
         Compute the numerical aperture in the y direction (dimensionless).
         NA_y ≈ λ / (π * w0_y) in the scalar Gaussian/paraxial limit.
         """
-        numerical_aperture_y = (self.vacuum_wavelength / (np.pi * self.beam_waist_radius_y))
+        numerical_aperture_y = self.vacuum_wavelength / (
+            np.pi * self.beam_waist_radius_y
+        )
         return numerical_aperture_y.to(ureg.dimensionless)
 
     def compute_rayleigh_range_x(self) -> Length:
@@ -104,7 +129,7 @@ class EllipticalGaussianBeam:
         Compute the Rayleigh range (z_R) in the x direction (meters).
         z_R,x = π w0_x^2 / λ
         """
-        rayleigh_range_x = (np.pi * self.beam_waist_radius_x**2 / self.vacuum_wavelength)
+        rayleigh_range_x = np.pi * self.beam_waist_radius_x**2 / self.vacuum_wavelength
         return rayleigh_range_x.to(ureg.meter)
 
     def compute_rayleigh_range_y(self) -> Length:
@@ -112,7 +137,7 @@ class EllipticalGaussianBeam:
         Compute the Rayleigh range (z_R) in the y direction (meters).
         z_R,y = π w0_y^2 / λ
         """
-        rayleigh_range_y = (np.pi * self.beam_waist_radius_y**2 / self.vacuum_wavelength)
+        rayleigh_range_y = np.pi * self.beam_waist_radius_y**2 / self.vacuum_wavelength
         return rayleigh_range_y.to(ureg.meter)
 
     def compute_stokes_parameters(self) -> tuple[float, float, float, float]:
@@ -133,7 +158,9 @@ class EllipticalGaussianBeam:
         """
         Pretty representation of the EllipticalGaussianBeam.
         """
-        azimuth_radians, ellipticity_radians = self.compute_polarization_ellipse_parameters()
+        azimuth_radians, ellipticity_radians = (
+            self.compute_polarization_ellipse_parameters()
+        )
         return (
             f"\n<EllipticalGaussianBeam>\n"
             f"  Wavelength (vacuum)       : {self.vacuum_wavelength.to('nm'):.2f}\n"
@@ -147,9 +174,13 @@ class EllipticalGaussianBeam:
             f"</EllipticalGaussianBeam>\n"
         )
 
-
     # ---- Plots ----
-    def plot_beam_radius_vs_axial_distance(self, axial_distance_range: Length = 1.0 * ureg.millimeter, number_of_points: int = 300) -> None:
+    @helper.post_mpl_plot
+    def plot_beam_radius_vs_axial_distance(
+        self,
+        axial_distance_range: Length = 1.0 * ureg.millimeter,
+        number_of_points: int = 300,
+    ) -> None:
         """
         Plot the beam radius versus axial distance for the elliptical Gaussian beam.
 
@@ -160,20 +191,42 @@ class EllipticalGaussianBeam:
         number_of_points : int
             The number of points to sample within the axial distance range (default: 300).
         """
-        axial_distance_array = np.linspace(-axial_distance_range.m_as('m'), axial_distance_range.m_as('m'), number_of_points) * ureg.meter
-        beam_radius_x = self.beam_waist_radius_x * np.sqrt(1.0 + (axial_distance_array / self.compute_rayleigh_range_x())**2)
-        beam_radius_y = self.beam_waist_radius_y * np.sqrt(1.0 + (axial_distance_array / self.compute_rayleigh_range_y())**2)
+        axial_distance_array = (
+            np.linspace(
+                -axial_distance_range.m_as("m"),
+                axial_distance_range.m_as("m"),
+                number_of_points,
+            )
+            * ureg.meter
+        )
+        beam_radius_x = self.beam_waist_radius_x * np.sqrt(
+            1.0 + (axial_distance_array / self.compute_rayleigh_range_x()) ** 2
+        )
+        beam_radius_y = self.beam_waist_radius_y * np.sqrt(
+            1.0 + (axial_distance_array / self.compute_rayleigh_range_y()) ** 2
+        )
 
-        plt.figure()
-        plt.plot(axial_distance_array.to('mm').magnitude, beam_radius_x.to('um').magnitude, label='beam_radius_x')
-        plt.plot(axial_distance_array.to('mm').magnitude, beam_radius_y.to('um').magnitude, label='beam_radius_y')
-        plt.xlabel("axial distance z [mm]")
-        plt.ylabel("beam radius [µm]")
-        plt.title("Elliptical Gaussian beam radius versus axial distance")
+        figure, ax = plt.subplots(1, 1)
+        ax.plot(
+            axial_distance_array.to("mm").magnitude,
+            beam_radius_x.to("um").magnitude,
+            label="beam_radius_x",
+        )
+        ax.plot(
+            axial_distance_array.to("mm").magnitude,
+            beam_radius_y.to("um").magnitude,
+            label="beam_radius_y",
+        )
+        ax.set(
+            ylabel="beam radius [µm]",
+            xlabel="axial distance z [mm]",
+            title="Elliptical Gaussian beam radius versus axial distance",
+        )
         plt.legend()
         plt.grid(True)
-        plt.show()
+        return figure
 
+    @helper.post_mpl_plot
     def plot_polarization_ellipse(self, ellipse_scale: float = 1.0) -> None:
         """
         Plot the polarization ellipse of the beam.
@@ -183,22 +236,36 @@ class EllipticalGaussianBeam:
         ellipse_scale : float
             The scale factor for the ellipse (default: 1.0).
         """
-        azimuth_radians, ellipticity_radians = self.compute_polarization_ellipse_parameters()
+        azimuth_radians, ellipticity_radians = (
+            self.compute_polarization_ellipse_parameters()
+        )
         major_axis = ellipse_scale
-        minor_axis = ellipse_scale * np.tan(ellipticity_radians) if np.cos(ellipticity_radians) != 0 else ellipse_scale
+        minor_axis = (
+            ellipse_scale * np.tan(ellipticity_radians)
+            if np.cos(ellipticity_radians) != 0
+            else ellipse_scale
+        )
         parametric_angle = np.linspace(0.0, 2.0 * np.pi, 400)
-        coordinate_x = major_axis * np.cos(parametric_angle) * np.cos(azimuth_radians) - minor_axis * np.sin(parametric_angle) * np.sin(azimuth_radians)
-        coordinate_y = major_axis * np.cos(parametric_angle) * np.sin(azimuth_radians) + minor_axis * np.sin(parametric_angle) * np.cos(azimuth_radians)
+        coordinate_x = major_axis * np.cos(parametric_angle) * np.cos(
+            azimuth_radians
+        ) - minor_axis * np.sin(parametric_angle) * np.sin(azimuth_radians)
+        coordinate_y = major_axis * np.cos(parametric_angle) * np.sin(
+            azimuth_radians
+        ) + minor_axis * np.sin(parametric_angle) * np.cos(azimuth_radians)
 
-        plt.figure()
-        plt.plot(coordinate_x, coordinate_y)
-        plt.gca().set_aspect('equal', adjustable='box')
-        plt.xlabel("electric field Ex (arb.)")
-        plt.ylabel("electric field Ey (arb.)")
-        plt.title("Polarization ellipse")
+        figure, ax = plt.subplots(1, 1)
+        ax.plot(coordinate_x, coordinate_y)
+        ax.set_aspect("equal", adjustable="box")
+
+        ax.set(
+            xlabel="electric field Ex (arb.)",
+            ylabel="electric field Ey (arb.)",
+            title="Polarization ellipse",
+        )
         plt.grid(True)
-        plt.show()
+        return figure
 
+    @helper.post_mpl_plot
     def plot_intensity_profile(
         self,
         axial_position: Length = 0.0 * ureg.meter,
@@ -239,16 +306,22 @@ class EllipticalGaussianBeam:
             grid_half_width = 3.0 * max(wx, wy)
 
         # Build transverse coordinate grid in meters
-        x = np.linspace(
-            -grid_half_width.m_as("m"),
-            +grid_half_width.m_as("m"),
-            resolution,
-        ) * ureg.meter
-        y = np.linspace(
-            -grid_half_width.m_as("m"),
-            +grid_half_width.m_as("m"),
-            resolution,
-        ) * ureg.meter
+        x = (
+            np.linspace(
+                -grid_half_width.m_as("m"),
+                +grid_half_width.m_as("m"),
+                resolution,
+            )
+            * ureg.meter
+        )
+        y = (
+            np.linspace(
+                -grid_half_width.m_as("m"),
+                +grid_half_width.m_as("m"),
+                resolution,
+            )
+            * ureg.meter
+        )
         X, Y = np.meshgrid(x, y, indexing="xy")
 
         # --- Intensity model: I(x,y;z) ∝ exp(-2 x^2 / w_x(z)^2 - 2 y^2 / w_y(z)^2) ---
@@ -281,15 +354,15 @@ class EllipticalGaussianBeam:
             y[-1].to("um").magnitude,
         ]
 
-        plt.figure()
-        plt.imshow(
+        figure, ax = plt.subplots(1, 1)
+        image = ax.imshow(
             I_plot,
             extent=extent_um,
             origin="lower",
             aspect="equal",
             interpolation="nearest",
         )
-        cbar = plt.colorbar()
+        cbar = plt.colorbar(ax=ax, mappable=image)
         cbar.set_label(im_label)
 
         # 1/e^2 contour overlay: I/I0 = exp(-2)  => level = exp(-2) in linear, or log10(exp(-2)) in log scale
@@ -301,12 +374,12 @@ class EllipticalGaussianBeam:
         # Contour expects X, Y in display units (µm)
         Xum = X.to("um").magnitude
         Yum = Y.to("um").magnitude
-        plt.contour(Xum, Yum, I_plot, levels=[level])
+        ax.contour(Xum, Yum, I_plot, levels=[level])
 
-        plt.xlabel("x [µm]")
-        plt.ylabel("y [µm]")
+        # Labels
+        ax.set_aspect("equal", adjustable="box")
+        ax.set(
+            xlabel="x [µm]", ylabel="y [µm]", title=f"Intensity at z = {z.to('mm'):.2f}"
+        )
 
-        # Title with plane and radii
-        plt.title(fr"Elliptical Gaussian intensity")
-        plt.tight_layout()
-        plt.show()
+        return figure
