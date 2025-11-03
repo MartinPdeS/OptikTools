@@ -308,12 +308,11 @@ class EllipticalGaussianBeam:
         # Build transverse coordinate grid in meters
         x = (
             np.linspace(
-                -grid_half_width.m_as("m"),
-                +grid_half_width.m_as("m"),
-                resolution,
+                -grid_half_width.m_as("m"), +grid_half_width.m_as("m"), resolution
             )
             * ureg.meter
         )
+
         y = (
             np.linspace(
                 -grid_half_width.m_as("m"),
@@ -322,6 +321,7 @@ class EllipticalGaussianBeam:
             )
             * ureg.meter
         )
+
         X, Y = np.meshgrid(x, y, indexing="xy")
 
         # --- Intensity model: I(x,y;z) ∝ exp(-2 x^2 / w_x(z)^2 - 2 y^2 / w_y(z)^2) ---
