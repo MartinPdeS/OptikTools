@@ -58,32 +58,3 @@ documentation = [
 dev = [
     "flake8 ==7.1.1",
 ]
-
-
-[tool.pytest.ini_options]
-python_functions = "test*"
-minversion = "6.0"
-xfail_strict = true
-log_cli_level = "INFO"
-testpaths = [
-    "tests"
-]
-addopts = [
-    '-v',
-    '-rA',
-    '-rw',
-    '-Werror',
-    '--cov=OptikTools',
-    '--cov-report=html',
-    "--cov-report=term"
-]
-
-[tool.coverage.run]
-source = ['OptikTools']
-omit = [
-    '*/__init__.py',
-    '*/_version.py',
-    '*/directories.py',
-]
-branch = true
-relative_files = true
